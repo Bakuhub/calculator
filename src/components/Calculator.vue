@@ -1,36 +1,36 @@
 <template>
-  <el-container>
-    <el-aside>
-      <el-table
-        :data="inputHistory"
-        style="width: 100%">
-        <el-table-column
-          prop="value"
-          label="input"
-        >
-        </el-table-column>
-      </el-table>
-    </el-aside>
-    <el-main>
-      <el-row :gutter="1">
-        <el-col :span="6">
-          <div class="grid-content bg-purple">
-            <el-input v-model="calculator.curValue"
-                      @keyup.native="keyMonitor"
-                      placeholder="ans"></el-input>
+  <el-container class="mainPage">
 
-          </div>
+    <el-aside class="hidden-sm-and-down">
+      <history-table :input="inputHistory"></history-table>
+    </el-aside>
+
+    <el-main>
+      <el-row>
+
+        <el-col :lg="{span:12,offset:6}"
+                :md="{span: 24}" class="calculatorBoard">
+          <el-row>
+            <el-col :offset="2" :span="20">
+              <el-input v-model="calculator.curValue"
+                        @keyup.native="keyMonitor"
+                        placeholder="ans"></el-input>
+
+            </el-col>
+          </el-row>
+          <operator-button v-for="(button,index) in calculator.button"
+                           :key="index"
+                           :value='button.value'
+                           :label='button.label'></operator-button>
         </el-col>
+
+      </el-row>
+      <el-row class="hidden-lg-and-up">
+        <history-table
+          :height="250"
+          :input="inputHistory"></history-table>
       </el-row>
 
-      <el-col :span="24">
-        <div>{{calculator.savedValue}}</div>
-      </el-col>
-
-      <operator-button v-for="(button,index) in calculator.button"
-                       :key="index"
-                       :value='button.value'
-                       :label='button.label'></operator-button>
     </el-main>
   </el-container>
 </template>
@@ -39,10 +39,12 @@
   import OperatorButton from "./Dialog/OperatorButton"
   import * as Events from '../foundation/event-hub'
   import {passInputToCalculator} from "../api/api-utils";
+  import 'element-ui/lib/theme-chalk/display.css';
+  import historyTable from "./Dialog/historyTable";
 
   export default {
     name: 'Calculator',
-    components: {OperatorButton},
+    components: {historyTable, OperatorButton},
     data() {
       return {
         calculator: {
@@ -51,41 +53,42 @@
           savedValue: '',
           button: {
             //col 1
-            7: {value: '7', label: '7'},
-            8: {value: '8', label: '8'},
-            9: {value: '9', label: '9'},
+            seven: {value: '7', label: '7'},
+            eight: {value: '8', label: '8'},
+            nine: {value: '9', label: '9'},
             divide: {value: '/', label: '÷'},
 
             //col 2
-            4: {value: '4', label: '4'},
-            5: {value: '5', label: '5'},
-            6: {value: '6', label: '6'},
+            four: {value: '4', label: '4'},
+            five: {value: '5', label: '5'},
+            six: {value: '6', label: '6'},
             times: {value: '*', label: '*'},
 
             //col 3
-            1: {value: '1', label: '1'},
-            2: {value: '2', label: '2'},
-            3: {value: '3', label: '3'},
+            one: {value: '1', label: '1'},
+            two: {value: '2', label: '2'},
+            three: {value: '3', label: '3'},
             minus: {value: '-', label: '-'},
 
             //col 4
             clear: {value: 'clear', label: 'AC'},
-            0: {value: '0', label: '0'},
+            zero: {value: '0', label: '0'},
             equal: {value: '=', label: '='},
             plus: {value: '+', label: '+'},
           }
         },
         inputHistory: [],
-        operatorSet: ['+', '-', '*', '/',]
+        operatorSet: ['+', '-', '*', '/', '.', '(', ')']
       }
     },
     created: function () {
       Events.hub.$on(Events.PASS_INPUT_TO_CALCULATOR, input => this.handleInput(input))
-    }
-    , methods: {
+    },
+
+    methods: {
       passInputToCalculator,
       handleInput(input) {
-        this.inputHistory.unshift({value: input})
+        this.unShiftInputToHistory(input)
         switch (true) {
           case (input === 'clear'):
             this.calculator.curValue = '0'
@@ -96,12 +99,11 @@
 
           case (this.isOperator(input)):
             this.calculator.curValue =
-              this.checkDuplicate(this.calculator.curValue,
-                input,
+              this.checkDuplicate(this.calculator.curValue, input,
                 this.isOperator(this.calculator.curValue.slice(-1)))
             break
 
-          case (this.isNumber(input)):
+          case (this.isSingleNumber(input)):
             this.calculator.curValue =
               ((this.calculator.curValue.slice(-1) === '0') ?
                 this.simplifyZero(this.calculator.curValue) : this.calculator.curValue) + input
@@ -111,57 +113,99 @@
             Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "invalid Number")
         }
       },
+      unShiftInputToHistory(input) {
+        const tableMaxSize = 10
+        let arrLength = this.inputHistory.length
+        let isReachedMaxSize = (arrLength >= tableMaxSize)
+        if (isReachedMaxSize) this.inputHistory = this.inputHistory.slice(0, 9)
+        this.inputHistory.unshift({value: input})
+      },
+
       calculateResult() {
+        let calculatedResult
         try {
-          let calculatedResult = eval(this.calculator.curValue).toString()
-          this.calculator.curValue = calculatedResult
-          this.inputHistory.unshift({value: calculatedResult})
+          calculatedResult = eval(this.calculator.curValue).toString()
         } catch (e) {
-          Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, e)
+          Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "can not calculated")
         }
+        this.calculator.curValue = calculatedResult
+        this.unShiftInputToHistory(calculatedResult)
       },
       keyMonitor: function (event) {
         let pressedKey = event.key
-        Object.keys(this.calculator.button).forEach(
-          e => {
-            if (this.calculator.button[e].value === pressedKey)
-              this.handleInput(pressedKey)
-          })
+        let isPressLetter = (event.which >= 65 && event.which <= 90)
+        switch (true) {
+          case (pressedKey === '='):
+            this.calculator.curValue = this.calculator.curValue.slice(0, -1)
 
-        if (pressedKey === 'enter')
-          this.calculateResult()
+          case  (pressedKey === 'Enter'):
+            this.calculateResult()
+            break
+
+          case (this.isOperator(pressedKey)):
+
+            if (this.calculator.curValue.length > 1) {
+              this.calculator.curValue = this.checkDuplicate(this.calculator.curValue.slice(0, -1),
+                pressedKey,
+                this.isOperator(this.calculator.curValue.charAt(this.calculator.curValue.length - 2)))
+            }
+            break
+          case (isPressLetter):
+            this.calculator.curValue = this.calculator.curValue.slice(0, -1)
+            Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "unsupported Operator")
+            break
+          default:
+            Object.keys(this.calculator.button).forEach(
+              e => {
+                if (this.calculator.button[e].value === pressedKey) {
+                  this.unShiftInputToHistory(pressedKey)
+                  this.calculator.curValue =
+                    ((this.calculator.curValue.slice(-1) === '0') ?
+                      this.simplifyZero(this.calculator.curValue)
+                      : this.calculator.curValue)
+                }
+              })
+        }
       },
       isOperator(input) {
         return (this.operatorSet.filter(t => t === input).length > 0)
       },
-      isNumber(input) {
-        return (parseInt(input) >= 0 && parseInt(input) < 10)
+      isSingleNumber(input) {
+        return ((parseInt(input) > 0 && parseInt(input) < 10))
       },
       simplifyZero(curValue) {
-        const lastDigit = curValue.slice(-1)
+        let index = curValue.length - 1
+        let lastDigit = curValue.charAt(index)
 
-
-        if (lastDigit === '0') {
-          return this.simplifyZero(curValue.slice(0, -1))
+        while (lastDigit === '0') {
+          index--
+          lastDigit = curValue.charAt(index)
         }
-        else if (this.isNumber(lastDigit) || (lastDigit === '.')) {
-          return curValue
-        } else
-          return curValue.slice(0, -1)
-
-
+        const hasExcessZero = !(this.isSingleNumber(lastDigit) || (lastDigit === '.'))
+        return (hasExcessZero) ? curValue.slice(0, index + 1) : curValue
       },
       checkDuplicate(curValue, input, isDuplicated) {
         return ((isDuplicated) ? curValue.slice(0, -1) : curValue) + input
       },
-      addInputToCurValue(input) {
-
-      }
-
     }
   }
 </script>
 
 <style scoped>
+
+  .calculatorBoard {
+    border: 8px solid #5e4c65;
+    background-color: #b0dcff;
+    padding: 10px;
+    border-radius: 10px;
+  }
+  .mainPage{
+    background-image: url("../assets/background.jpg") ;
+
+    /* Full height */
+    height: 100%;
+
+    background-size: cover;
+  }
 
 </style>
