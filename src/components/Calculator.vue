@@ -1,7 +1,7 @@
 <template>
   <el-container class="mainPage">
 
-    <el-aside class="hidden-sm-and-down">
+    <el-aside class="hidden-md-and-down">
       <history-table :input="inputHistory"></history-table>
     </el-aside>
 
