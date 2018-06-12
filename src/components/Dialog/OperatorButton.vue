@@ -2,7 +2,7 @@
 
   <el-col :pull="1" :offset="1" :span="5">
     <div class="wrap">
-      <a href="#" class="button2"
+      <a href="#" class="button2 fontsforweb_fontid_523"
          type="info"
          @click='passInputToCalculator(value)'
       >{{label}}</a></div>

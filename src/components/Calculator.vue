@@ -62,7 +62,7 @@
             four: {value: '4', label: '4'},
             five: {value: '5', label: '5'},
             six: {value: '6', label: '6'},
-            times: {value: '*', label: '*'},
+            times: {value: '*', label: 'x'},
 
             //col 3
             one: {value: '1', label: '1'},
@@ -80,6 +80,11 @@
         inputHistory: [],
         operatorSet: ['+', '-', '*', '/', '.', '(', ')']
       }
+    },
+    computed:{
+      curValue(){
+        return
+  }
     },
     created: function () {
       Events.hub.$on(Events.PASS_INPUT_TO_CALCULATOR, input => this.handleInput(input))
@@ -204,7 +209,7 @@
 
     /* Full height */
     height: 100%;
-
+    font-family: Lcdd;
     background-size: cover;
   }
 
