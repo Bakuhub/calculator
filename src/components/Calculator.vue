@@ -1,35 +1,42 @@
 <template>
   <el-container class="mainPage">
-
     <el-aside class="hidden-md-and-down">
-      <history-table :input="inputHistory"></history-table>
+      <history-table :input="inputHistory">
+
+      </history-table>
     </el-aside>
 
     <el-main>
       <el-row>
 
-        <el-col :lg="{span:12,offset:6}"
-                :md="{span: 24}" class="calculatorBoard">
+        <el-col :lg="{span:12,offset:6}" :md="{span: 24}" class="calculatorBoard">
           <el-row>
-            <el-col :offset="2" :span="20">
+            <el-col :offset="1" :span="22">
               <el-input v-model="displayValue"
+                        type="number"
                         class="inputBar"
-                        @keyup.native="keyMonitor"
-                        placeholder="ans"></el-input>
+                        @keypress.native="keyMonitor"
+                        placeholder="ans">
+                <template class="inputBar" slot="append">{{operator}}</template>
+              </el-input>
 
             </el-col>
           </el-row>
+
           <operator-button v-for="(button,index) in calculatorButton"
                            :key="index"
                            :value='button.value'
-                           :label='button.label'></operator-button>
+                           :label='button.label'>
+          </operator-button>
         </el-col>
 
       </el-row>
       <el-row class="hidden-lg-and-up">
         <history-table
           :height="250"
-          :input="inputHistory"></history-table>
+          :input="inputHistory">
+
+        </history-table>
       </el-row>
 
     </el-main>
@@ -43,22 +50,15 @@
   import 'element-ui/lib/theme-chalk/display.css';
   import historyTable from "./Dialog/historyTable";
   import * as types from "../store/mutation-types"
+  import {isSingleNumber} from "../api/api-utils";
+  import {isOperator} from "../api/api-utils";
 
   export default {
     name: 'Calculator',
     components: {historyTable, OperatorButton},
 
     data() {
-      return {
-        calculator: {
-          input: '',
-          curValue: '',
-          savedValue: '',
-
-        },
-
-        operatorSet: ['+', '-', '*', '/', '.', '(', ')']
-      }
+      return {}
     },
     computed: {
       calculatorButton: function () {
@@ -67,8 +67,11 @@
       inputHistory: function () {
         return this.$store.state.common.inputHistory
       },
-      displayValue:function () {
+      displayValue: function () {
         return this.$store.state.common.displayValue
+      },
+      operator: function () {
+        return this.$store.state.common.savedOperator
       }
     },
     created: function () {
@@ -80,93 +83,43 @@
       handleInput(input) {
         this.unShiftInputToHistory(input)
         switch (true) {
-          // case (input === 'clear'):
-          //   this.$store.dispatch(types.ACTION_UPDATE_DISPLAY_VALUE,  "0")
+          case (input === 'clear'):
+            this.$store.dispatch(types.ACTION_CLEAR_CALCULATOR)
+            break
 
-          case (this.isOperator(input)):
+          case (isOperator(input)):
             this.$store.dispatch(types.ACTION_UPDATE_OPERATOR, input)
             break
 
-          case (this.isSingleNumber(input)):
-            this.calculator.curValue =
-              ((this.calculator.curValue.slice(-1) === '0') ?
-                this.simplifyZero(this.calculator.curValue) : this.calculator.curValue) + input
+          case (isSingleNumber(input)):
+            this.$store.dispatch(types.ACTION_UPDATE_DISPLAY_VALUE, input)
+            break
+
+          case(input === '='):
+            this.$store.dispatch(types.ACTION_CALCULATE_RESULT)
             break
 
           default:
-            Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "invalid Number")
+            Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, input)
         }
       },
       unShiftInputToHistory(input) {
-        this.$store.dispatch(types.ACTION_INSERT_INPUT_HISTORY, input)
-      },
-
-      calculateResult() {
-        let calculatedResult
-        try {
-          calculatedResult = eval(this.calculator.curValue).toString()
-        } catch (e) {
-          Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "can not calculated")
-        }
-        this.calculator.curValue = calculatedResult
-        this.unShiftInputToHistory(calculatedResult)
+        this.$store.dispatch(types.ACTION_INSERT_INPUT_HISTORY, "unsupported operator")
       },
       keyMonitor: function (event) {
+event.preventDefault()
         let pressedKey = event.key
-        let isPressLetter = (event.which >= 65 && event.which <= 90)
         switch (true) {
-          case (pressedKey === '='):
-            this.calculator.curValue = this.calculator.curValue.slice(0, -1)
-
           case  (pressedKey === 'Enter'):
-            this.calculateResult()
+            this.$store.dispatch(types.ACTION_CALCULATE_RESULT)
             break
 
-          case (this.isOperator(pressedKey)):
-
-            if (this.calculator.curValue.length > 1) {
-              this.calculator.curValue = this.checkDuplicate(this.calculator.curValue.slice(0, -1),
-                pressedKey,
-                this.isOperator(this.calculator.curValue.charAt(this.calculator.curValue.length - 2)))
-            }
-            break
-          case (isPressLetter):
-            this.calculator.curValue = this.calculator.curValue.slice(0, -1)
-            Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "unsupported Operator")
-            break
           default:
-            Object.keys(this.calculator.button).forEach(
-              e => {
-                if (this.calculator.button[e].value === pressedKey) {
-                  this.unShiftInputToHistory(pressedKey)
-                  this.calculator.curValue =
-                    ((this.calculator.curValue.slice(-1) === '0') ?
-                      this.simplifyZero(this.calculator.curValue)
-                      : this.calculator.curValue)
-                }
-              })
+            this.handleInput(pressedKey)
         }
       },
-      isOperator(input) {
-        return (this.operatorSet.filter(t => t === input).length > 0)
-      },
-      isSingleNumber(input) {
-        return ((parseInt(input) > 0 && parseInt(input) < 10))
-      },
-      simplifyZero(curValue) {
-        let index = curValue.length - 1
-        let lastDigit = curValue.charAt(index)
 
-        while (lastDigit === '0') {
-          index--
-          lastDigit = curValue.charAt(index)
-        }
-        const hasExcessZero = !(this.isSingleNumber(lastDigit) || (lastDigit === '.'))
-        return (hasExcessZero) ? curValue.slice(0, index + 1) : curValue
-      },
-      checkDuplicate(curValue, input, isDuplicated) {
-        return ((isDuplicated) ? curValue.slice(0, -1) : curValue) + input
-      },
+
     }
   }
 </script>
@@ -174,6 +127,7 @@
 <style scoped>
   .inputBar {
     font-size: 40px;
+    text-align: right;
   }
 
   .calculatorBoard {
@@ -185,7 +139,6 @@
 
   .mainPage {
     background-image: url("../assets/background.jpg");
-
     /* Full height */
     height: 100%;
     font-family: Lcdd;
