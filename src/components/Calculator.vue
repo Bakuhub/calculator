@@ -18,7 +18,7 @@
 
             </el-col>
           </el-row>
-          <operator-button v-for="(button,index) in calculator.button"
+          <operator-button v-for="(button,index) in calculatorButton"
                            :key="index"
                            :value='button.value'
                            :label='button.label'></operator-button>
@@ -41,7 +41,6 @@
   import {passInputToCalculator} from "../api/api-utils";
   import 'element-ui/lib/theme-chalk/display.css';
   import historyTable from "./Dialog/historyTable";
-
   export default {
     name: 'Calculator',
     components: {historyTable, OperatorButton},
@@ -51,40 +50,19 @@
           input: '',
           curValue: '',
           savedValue: '',
-          button: {
-            //col 1
-            seven: {value: '7', label: '7'},
-            eight: {value: '8', label: '8'},
-            nine: {value: '9', label: '9'},
-            divide: {value: '/', label: '÷'},
 
-            //col 2
-            four: {value: '4', label: '4'},
-            five: {value: '5', label: '5'},
-            six: {value: '6', label: '6'},
-            times: {value: '*', label: 'x'},
-
-            //col 3
-            one: {value: '1', label: '1'},
-            two: {value: '2', label: '2'},
-            three: {value: '3', label: '3'},
-            minus: {value: '-', label: '-'},
-
-            //col 4
-            clear: {value: 'clear', label: 'AC'},
-            zero: {value: '0', label: '0'},
-            equal: {value: '=', label: '='},
-            plus: {value: '+', label: '+'},
-          }
         },
-        inputHistory: [],
+
         operatorSet: ['+', '-', '*', '/', '.', '(', ')']
       }
     },
     computed:{
-      curValue(){
-        return
-  }
+    calculatorButton: function(){
+      return this.$store.state.common.calculatorButton
+    },
+      inputHistory: function () {
+        return this.$store.state.common.inputHistory
+      }
     },
     created: function () {
       Events.hub.$on(Events.PASS_INPUT_TO_CALCULATOR, input => this.handleInput(input))
@@ -119,11 +97,7 @@
         }
       },
       unShiftInputToHistory(input) {
-        const tableMaxSize = 10
-        let arrLength = this.inputHistory.length
-        let isReachedMaxSize = (arrLength >= tableMaxSize)
-        if (isReachedMaxSize) this.inputHistory = this.inputHistory.slice(0, 9)
-        this.inputHistory.unshift({value: input})
+     this.$store.dispatch('ACTION_INSERT_INPUT_HISTORY',input)
       },
 
       calculateResult() {
