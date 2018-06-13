@@ -12,7 +12,8 @@
                 :md="{span: 24}" class="calculatorBoard">
           <el-row>
             <el-col :offset="2" :span="20">
-              <el-input v-model="calculator.curValue"
+              <el-input v-model="displayValue"
+                        class="inputBar"
                         @keyup.native="keyMonitor"
                         placeholder="ans"></el-input>
 
@@ -41,9 +42,12 @@
   import {passInputToCalculator} from "../api/api-utils";
   import 'element-ui/lib/theme-chalk/display.css';
   import historyTable from "./Dialog/historyTable";
+  import * as types from "../store/mutation-types"
+
   export default {
     name: 'Calculator',
     components: {historyTable, OperatorButton},
+
     data() {
       return {
         calculator: {
@@ -56,12 +60,15 @@
         operatorSet: ['+', '-', '*', '/', '.', '(', ')']
       }
     },
-    computed:{
-    calculatorButton: function(){
-      return this.$store.state.common.calculatorButton
-    },
+    computed: {
+      calculatorButton: function () {
+        return this.$store.state.common.calculatorButton
+      },
       inputHistory: function () {
         return this.$store.state.common.inputHistory
+      },
+      displayValue:function () {
+        return this.$store.state.common.displayValue
       }
     },
     created: function () {
@@ -73,17 +80,11 @@
       handleInput(input) {
         this.unShiftInputToHistory(input)
         switch (true) {
-          case (input === 'clear'):
-            this.calculator.curValue = '0'
-
-          case (input === '='):
-            this.calculateResult()
-            break
+          // case (input === 'clear'):
+          //   this.$store.dispatch(types.ACTION_UPDATE_DISPLAY_VALUE,  "0")
 
           case (this.isOperator(input)):
-            this.calculator.curValue =
-              this.checkDuplicate(this.calculator.curValue, input,
-                this.isOperator(this.calculator.curValue.slice(-1)))
+            this.$store.dispatch(types.ACTION_UPDATE_OPERATOR, input)
             break
 
           case (this.isSingleNumber(input)):
@@ -97,7 +98,7 @@
         }
       },
       unShiftInputToHistory(input) {
-     this.$store.dispatch('ACTION_INSERT_INPUT_HISTORY',input)
+        this.$store.dispatch(types.ACTION_INSERT_INPUT_HISTORY, input)
       },
 
       calculateResult() {
@@ -171,6 +172,9 @@
 </script>
 
 <style scoped>
+  .inputBar {
+    font-size: 40px;
+  }
 
   .calculatorBoard {
     border: 8px solid #5e4c65;
@@ -178,8 +182,9 @@
     padding: 10px;
     border-radius: 10px;
   }
-  .mainPage{
-    background-image: url("../assets/background.jpg") ;
+
+  .mainPage {
+    background-image: url("../assets/background.jpg");
 
     /* Full height */
     height: 100%;
