@@ -13,11 +13,12 @@
           <el-row>
             <el-col :offset="1" :span="22">
               <el-input v-model="displayValue"
-                        type="number"
                         class="inputBar"
                         @keypress.native="keyMonitor"
                         placeholder="ans">
-                <template class="inputBar" slot="append">{{operator}}</template>
+                <template class="inputBar" slot="append">
+                  {{operator}}
+                </template>
               </el-input>
 
             </el-col>
@@ -100,11 +101,11 @@
             break
 
           default:
-            Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, input)
+            Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "unsupported operator")
         }
       },
       unShiftInputToHistory(input) {
-        this.$store.dispatch(types.ACTION_INSERT_INPUT_HISTORY, "unsupported operator")
+        this.$store.dispatch(types.ACTION_INSERT_INPUT_HISTORY, input)
       },
       keyMonitor: function (event) {
 event.preventDefault()
