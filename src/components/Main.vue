@@ -1,5 +1,5 @@
 <template>
-  <calculator ></calculator>
+<calculator></calculator>
 </template>
 
 <script>

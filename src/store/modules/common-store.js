@@ -68,9 +68,9 @@ const mutations = {
     }
   },
   [types.ACTION_CLEAR_CALCULATOR](state) {
+    state.displayValue = "0"
     state.savedOperator = ""
     state.savedValue = ""
-    state.displayValue = 0
   },
 
   [types.ACTION_INSERT_INPUT_HISTORY](state, input) {
@@ -96,12 +96,15 @@ const mutations = {
     try {
 
       let isValid = (state.displayValue) && (state.savedValue) && (isOperator(state.savedOperator))
-      if (isValid) {
-        console.log()
-        state.displayValue = eval(state.savedValue + state.savedOperator + state.displayValue).toString()
-        mutations[types.ACTION_INSERT_INPUT_HISTORY](state, state.displayValue)
-      }
 
+      if (isValid) {
+        state.displayValue = eval(state.savedValue + state.savedOperator + state.displayValue).toString()
+      }
+      if (state.displayValue === 'NaN'){
+        state.displayValue = "0"
+        Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "can not divided by 0")
+
+      }
       state.savedValue = ""
       state.savedOperator = "="
     } catch (e) {
