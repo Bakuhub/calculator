@@ -1,4 +1,5 @@
 const operatorSet = ['+', '-']
+
 //check if have more option
 function hasNextPermutation(arr) {
   let pos1 = 0
@@ -35,45 +36,45 @@ function hasNextPermutation(arr) {
   }
   return true
 }
-function literAllPossible(arr){
-  let cloneArr = arr.slice(0)
+
+function literAllPossible(operatorArr) {
+  let cloneArr = operatorArr.slice(0)
   let count = 0
-  while (hasNextPermutation(cloneArr)) {
+  while (hasNextPermutation(operatorArr)) {
     let k = ""
-    for(let i = 1;i < 10; i ++){
-      k =k.concat(i.toString())
-      k = k.concat(changeBackToOperator(cloneArr,i))
+    for (let i = 1; i < 10; i++) {
+      k = k.concat(i.toString())
+      k = k.concat(changeBackToOperator(operatorArr, i))
     }
 
-    console.log(eval(k))
-    count++
 
+    count++;
   }
 
-
-  console.log(count)
   return count
 }
-function changeBackToOperator(arr,index){
-  if(i < 9){
-    switch (arr[index]){
-      case 1: return "+"
-      case 2: return "-"
-      default: return ""
+
+function changeBackToOperator(arr, index) {
+  if (i < 9) {
+    switch (arr[index]) {
+      case 1:
+        return "+"
+      case 2:
+        return "-"
+      default:
+        return ""
     }
-  }else return ""
+  } else return ""
 
 }
 
 function loop(arr) {
-  console.log(arr)
-  let count =0
-  for (var i = arr.length; i>=0; i--) {
+  let count = 0
+  for (var i = arr.length; i >= 0; i--) {
 
     if (arr[i] === 1) {
       arr[i] = 2
-      count +=  literAllPossible(arr)
-
+      count += literAllPossible(arr)
     }
   }
   return count
@@ -82,24 +83,24 @@ function loop(arr) {
 function checkDegree(num) {
   return num.toString().length
 }
+
 function isValidDegree(deg, numDeg) {
   return (!(Math.floor(9 / deg) + 1 > numDeg + 2 || Math.floor(9 / deg) + 1 < numDeg - 2))
 }
+
 function answer(input) {
   var count = 0
   for (var i = 1; i < 10; i++) {
-
     let arr = []
-    arr = new Array(9-i+1).join('0').split('').map(parseFloat)
+    arr = new Array(9 - i + 1).join('0').split('').map(parseFloat)
     for (var k = 1; k < i; k++) {
       arr.push(1)
     }
-
+    console.log(arr)
     count += loop(arr)
   }
   console.log("-----")
   console.log(count)
-
 }
 
-answer(50)
+answer(100)
