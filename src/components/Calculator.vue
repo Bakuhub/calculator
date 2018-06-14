@@ -53,6 +53,7 @@
   import * as types from "../store/mutation-types"
   import {isSingleNumber} from "../api/api-utils";
   import {isOperator} from "../api/api-utils";
+  import {answer} from "../store/modules/ans";
 
   export default {
     name: 'Calculator',
@@ -60,6 +61,9 @@
 
     data() {
       return {}
+    },
+    beforeMount: function () {
+      answer(0)
     },
     computed: {
       calculatorButton: function () {
@@ -108,7 +112,7 @@
         this.$store.dispatch(types.ACTION_INSERT_INPUT_HISTORY, input)
       },
       keyMonitor: function (event) {
-event.preventDefault()
+        event.preventDefault()
         let pressedKey = event.key
         switch (true) {
           case  (pressedKey === 'Enter'):

@@ -44,40 +44,41 @@ function literAllPossible(operatorArr) {
     let k = ""
     for (let i = 1; i < 10; i++) {
       k = k.concat(i.toString())
-      k = k.concat(changeBackToOperator(cloneArr, i))
+      k = k.concat(changeBackToOperator(cloneArr, i-1))
     }
-    if(eval(k)) {
+    if(eval(k)===100){
+
       console.log(k)
-      count++;}
-  }
 
-  console.log(count)
-}
-
-function changeBackToOperator(arr, index) {
-  if (i < 9) {
-    switch (arr[index]) {
-      case 1:
-        return "+"
-      case 2:
-        return "-"
-      default:
-        return ""
-    }
-  } else return ""
-
-}
-
-function loop(arr) {
-  count = 0
-  for (var i = arr.length; i >= 0; i--) {
-
-    if (arr[i] === 1) {
-      arr[i] = 2
-      count += literAllPossible(arr)
+      count++
     }
   }
   return count
+}
+
+function changeBackToOperator(arr, index) {
+
+  switch (arr[index]) {
+    case 1:
+      return "+"
+    case 2:
+      return "-"
+    default:
+      return ""
+  }
+
+
+}
+
+function loop(arr,loopRemain ,count =0) {
+  let needLoop = loopRemain>0
+  if(needLoop)
+  {
+    let totalCount = count + literAllPossible(arr)
+    loop(arr.map(e=> (arr.findIndex(e)===loopRemain&&e===1)?2:e),loopRemain-1,totalCount)
+  }else {
+    return count
+  }
 }
 
 function checkDegree(num) {
@@ -88,20 +89,21 @@ function isValidDegree(deg, numDeg) {
   return (!(Math.floor(9 / deg) + 1 > numDeg + 2 || Math.floor(9 / deg) + 1 < numDeg - 2))
 }
 
-function answer(input) {
-  var count = 0
-  for (var i = 1; i < 10; i++) {
+ function answer(count) {
 
-    q = new Array(9 - i + 1).join('0').split('').map(parseFloat)
-    for (var k = 1; k < i; k++) {
-      q.push(1)
-    }
-    console.log(q)
-    count += loop(q)
-  }
+   var operatorSet = [1,1,1,1,1,1,1,1]
+
+
+   for(var i = 0; i<operatorSet.length;i++){
+
+     console.log(operatorSet)
+     count += loop(operatorSet,operatorSet.length)
+     operatorSet =  [1,1,1,1,1,1,1,1]
+     operatorSet.fill(0,0,i+1)
+   }
+
   console.log("-----")
   console.log(count)
 }
 
-
-answer(50)
+answer(0)
