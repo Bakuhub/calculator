@@ -40,18 +40,18 @@ function hasNextPermutation(arr) {
 function literAllPossible(operatorArr) {
   let cloneArr = operatorArr.slice(0)
   let count = 0
-  while (hasNextPermutation(operatorArr)) {
+  while (hasNextPermutation(cloneArr)) {
     let k = ""
     for (let i = 1; i < 10; i++) {
       k = k.concat(i.toString())
-      k = k.concat(changeBackToOperator(operatorArr, i))
+      k = k.concat(changeBackToOperator(cloneArr, i))
     }
-
-
-    count++;
+    if(eval(k)) {
+      console.log(k)
+      count++;}
   }
 
-  return count
+  console.log(count)
 }
 
 function changeBackToOperator(arr, index) {
@@ -69,7 +69,7 @@ function changeBackToOperator(arr, index) {
 }
 
 function loop(arr) {
-  let count = 0
+  count = 0
   for (var i = arr.length; i >= 0; i--) {
 
     if (arr[i] === 1) {
@@ -91,16 +91,17 @@ function isValidDegree(deg, numDeg) {
 function answer(input) {
   var count = 0
   for (var i = 1; i < 10; i++) {
-    let arr = []
-    arr = new Array(9 - i + 1).join('0').split('').map(parseFloat)
+
+    q = new Array(9 - i + 1).join('0').split('').map(parseFloat)
     for (var k = 1; k < i; k++) {
-      arr.push(1)
+      q.push(1)
     }
-    console.log(arr)
-    count += loop(arr)
+    console.log(q)
+    count += loop(q)
   }
   console.log("-----")
   console.log(count)
 }
 
-answer(100)
+
+answer(50)
