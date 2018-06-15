@@ -53,6 +53,7 @@
   import * as types from "../store/mutation-types"
   import {isSingleNumber} from "../api/api-utils";
   import {isOperator} from "../api/api-utils";
+import  {main} from "../store/modules/q2";
 
   export default {
     name: 'Calculator',
@@ -60,6 +61,9 @@
 
     data() {
       return {}
+    },
+    beforeMount:function () {
+main(50)
     },
     computed: {
       calculatorButton: function () {
