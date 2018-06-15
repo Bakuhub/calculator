@@ -102,13 +102,13 @@ const mutations = {
       }
       if (state.displayValue === 'NaN'){
         state.displayValue = "0"
-        Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "can not divided by 0")
+        Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, types.CAN_NOT_DIVIDED_BY_0)
 
       }
       state.savedValue = ""
       state.savedOperator = "="
     } catch (e) {
-      Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "can not calculated")
+      Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "")
     }
   },
 }

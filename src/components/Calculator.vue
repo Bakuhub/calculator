@@ -53,7 +53,6 @@
   import * as types from "../store/mutation-types"
   import {isSingleNumber} from "../api/api-utils";
   import {isOperator} from "../api/api-utils";
-  import {answer} from "../store/modules/ans";
 
   export default {
     name: 'Calculator',
@@ -61,9 +60,6 @@
 
     data() {
       return {}
-    },
-    beforeMount: function () {
-      answer(0)
     },
     computed: {
       calculatorButton: function () {
@@ -84,6 +80,8 @@
     },
 
     methods: {
+
+
       passInputToCalculator,
       handleInput(input) {
         this.unShiftInputToHistory(input)
@@ -105,7 +103,7 @@
             break
 
           default:
-            Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, "unsupported operator")
+            Events.hub.$emit(Events.SHOW_ERROR_MESSAGE, types.UNSUPPORTED_OPERATOR)
         }
       },
       unShiftInputToHistory(input) {
